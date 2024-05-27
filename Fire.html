@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Fire Animation</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('fireCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width = window.innerWidth;
+        const height = canvas.height = window.innerHeight;
+
+        const firePixels = [];
+        const fireWidth = Math.floor(width / 10);
+        const fireHeight = Math.floor(height / 10);
+        const palette = [
+            'rgba(7, 7, 7, 1)',
+            'rgba(31, 7, 7, 1)',
+            'rgba(47, 15, 7, 1)',
+            'rgba(71, 15, 7, 1)',
+            'rgba(87, 23, 7, 1)',
+            'rgba(103, 31, 7, 1)',
+            'rgba(119, 31, 7, 1)',
+            'rgba(143, 39, 7, 1)',
+            'rgba(159, 47, 7, 1)',
+            'rgba(175, 63, 7, 1)',
+            'rgba(191, 71, 7, 1)',
+            'rgba(199, 71, 7, 1)',
+            'rgba(223, 79, 7, 1)',
+            'rgba(223, 87, 7, 1)',
+            'rgba(223, 87, 7, 1)',
+            'rgba(215, 95, 7, 1)',
+            'rgba(215, 95, 7, 1)',
+            'rgba(215, 103, 15, 1)',
+            'rgba(207, 111, 15, 1)',
+            'rgba(207, 119, 15, 1)',
+            'rgba(207, 127, 15, 1)',
+            'rgba(207, 135, 23, 1)',
+            'rgba(199, 135, 23, 1)',
+            'rgba(199, 143, 23, 1)',
+            'rgba(199, 151, 31, 1)',
+            'rgba(191, 159, 31, 1)',
+            'rgba(191, 159, 31, 1)',
+            'rgba(191, 167, 39, 1)',
+            'rgba(191, 167, 39, 1)',
+            'rgba(191, 175, 47, 1)',
+            'rgba(183, 175, 47, 1)',
+            'rgba(183, 183, 47, 1)',
+            'rgba(183, 183, 55, 1)',
+            'rgba(207, 207, 111, 1)',
+            'rgba(223, 223, 159, 1)',
+            'rgba(239, 239, 199, 1)',
+            'rgba(255, 255, 255, 1)'
+        ];
+
+        const createFireDataStructure = () => {
+            for (let i = 0; i < fireWidth * fireHeight; i++) {
+                firePixels[i] = 0;
+            }
+        };
+
+        const createFireSource = () => {
+            for (let col = 0; col <= fireWidth; col++) {
+                const overflowPixelIndex = fireWidth * fireHeight;
+                const pixelIndex = (overflowPixelIndex - fireWidth) + col;
+
+                firePixels[pixelIndex] = palette.length - 1;
+            }
+        };
+
+        const calculateFirePropagation = () => {
+            for (let row = 0; row < fireHeight; row++) {
+                for (let col = 0; col < fireWidth; col++) {
+                    const pixelIndex = col + (fireWidth * row);
+                    updateFireIntensityPerPixel(pixelIndex);
+                }
+            }
+        };
+
+        const updateFireIntensityPerPixel = currentPixelIndex => {
+            const belowPixelIndex = currentPixelIndex + fireWidth;
+
+            if (belowPixelIndex >= fireWidth * fireHeight) {
+                return;
+            }
+
+            const decay = Math.floor(Math.random() * 3);
+            const belowPixelFireIntensity = firePixels[belowPixelIndex];
+            const newFireIntensity =
+                belowPixelFireIntensity - decay >= 0 ? belowPixelFireIntensity - decay : 0;
+
+            firePixels[currentPixelIndex - decay] = newFireIntensity;
+        };
+
+        const renderFire = () => {
+            for (let row = 0; row < fireHeight; row++) {
+                for (let col = 0; col < fireWidth; col++) {
+                    const pixelIndex = col + (fireWidth * row);
+                    const fireIntensity = firePixels[pixelIndex];
+                    const color = palette[fireIntensity];
+
+                    ctx.fillStyle = color;
+                    ctx.fillRect(col * 10, row * 10, 10, 10);
+                }
+            }
+        };
+
+        const fireLoop = () => {
+            calculateFirePropagation();
+            renderFire();
+            requestAnimationFrame(fireLoop);
+        };
+
+        createFireDataStructure();
+        createFireSource();
+        fireLoop();
+    </script>
+</body>
+</html>
